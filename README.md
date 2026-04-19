@@ -1,8 +1,8 @@
 # OpenClaw Multi-Agent Team Configuration
 
-Acest repository conține configurarea completă pentru echipa de 9 agenți AI specializați în dezvoltarea proiectului QuickDelivery, configurată pentru OpenClaw + Multica.
+Acest repository conține configurarea completă pentru echipa de 8 agenți AI specializați în dezvoltarea proiectului QuickDelivery, configurată pentru OpenClaw + Multica.
 
-## 🏛️ Structura Echipei (9 Agenți)
+## 🏛️ Structura Echipei (8 Agenți)
 
 ### 🎯 Product-Architect (Orchestrator)
 **Rol:** Product Owner + Orchestrator  
@@ -52,6 +52,10 @@ openclaw-multiagents-team/
 │   ├── assign-to-reviewer-all.sh      # Script assign către Reviewer-All
 │   ├── assign-to-specialists-all.sh   # Script assign către Specialists-All
 │   └── assign-to-builder.sh           # Script assign legacy
+├── taskboard/                         # 📊 Taskboard v2.0
+│   ├── taskboard.html                 # UI interactiv
+│   ├── data.json                      # Config agenți și proiecte
+│   └── start-taskboard.sh             # Script pornire
 ├── backend-architect/                 # ⚙️ Backend-Architect config
 │   ├── SOUL.md
 │   ├── IDENTITY.md
@@ -164,8 +168,9 @@ Product-Architect are 8 scripturi shell pentru a assigna task-uri către fiecare
 
 | Data | Eveniment |
 |------|-----------|
-| **19 Aprilie 2026** | Configurare inițială a echipei de 9 agenți AI |
+| **19 Aprilie 2026** | Configurare inițială a echipei de 8 agenți AI |
 | **19 Aprilie 2026** | Setup Product-Architect ca Orchestrator + scripturi de assign |
+| **19 Aprilie 2026** | Taskboard v2.0 cu multi-project și persistență |
 
 ## 👤 Owner
 
@@ -174,3 +179,48 @@ Product-Architect are 8 scripturi shell pentru a assigna task-uri către fiecare
 ---
 
 *Notă: Această configurare este specifică pentru proiectul QuickDelivery și OpenClaw. Nu ar trebui folosită în alte contexte fără adaptare.*
+
+---
+
+## 📊 Taskboard v2.0
+
+Taskboard interactiv pentru managementul task-urilor echipei:
+
+### 🎯 Features
+- **8 Agenți** configurați cu emoji și culori
+- **Multi-proiect** support
+- **Persistență** (JSON + localStorage backup)
+- **Dependințe** între task-uri cu blocare automată
+- **Drag & drop** Kanban board (5 coloane)
+- **Stats live** (total, active, completed, blocked)
+- **Auto-save** la fiecare 30 secunde
+
+### 📁 Fișiere Taskboard
+```
+taskboard/
+├── taskboard.html          # UI complet (32KB)
+├── data.json               # Config agenți și proiecte
+└── start-taskboard.sh      # Script pornire server
+```
+
+### 🚀 Utilizare
+```bash
+# Pornește serverul
+cd /workspace/shared
+./start-taskboard.sh
+
+# Deschide în browser
+http://localhost:8080/taskboard.html
+```
+
+### 🎨 Agenți în Taskboard
+| Agent | Emoji | Rol |
+|-------|-------|-----|
+| Product-Architect | 🎯 | Product Owner + Orchestrator |
+| Backend-Architect | ⚙️ | API/DB Architect |
+| Frontend-Architect | 🎨 | UI/UX Architect |
+| Builder-Modules | 🛠️ | Web Developer |
+| Builder-Mobile | 📱 | Mobile Developer |
+| Reviewer-All | 👁️ | Code Reviewer |
+| Operations-All | 🚀 | DevOps Engineer |
+| Specialists-All | 🔬 | Research/BA |

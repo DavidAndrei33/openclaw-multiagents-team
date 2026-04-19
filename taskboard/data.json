@@ -1,0 +1,70 @@
+{
+  "version": "2.0.0",
+  "last_updated": "2026-04-19T13:45:00Z",
+  "agents": {
+    "product-architect": {
+      "name": "Product-Architect",
+      "emoji": "🎯",
+      "role": "Product Owner + Orchestrator",
+      "color": "#e94560"
+    },
+    "backend-architect": {
+      "name": "Backend-Architect",
+      "emoji": "⚙️",
+      "role": "API/DB Architect",
+      "color": "#4ecdc4"
+    },
+    "frontend-architect": {
+      "name": "Frontend-Architect",
+      "emoji": "🎨",
+      "role": "UI/UX Architect",
+      "color": "#ff6b6b"
+    },
+    "builder-modules": {
+      "name": "Builder-Modules",
+      "emoji": "🛠️",
+      "role": "Web Developer",
+      "color": "#95e1d3"
+    },
+    "builder-mobile": {
+      "name": "Builder-Mobile",
+      "emoji": "📱",
+      "role": "Mobile Developer",
+      "color": "#ffd93d"
+    },
+    "reviewer-all": {
+      "name": "Reviewer-All",
+      "emoji": "👁️",
+      "role": "Code Reviewer",
+      "color": "#a8d8ea"
+    },
+    "operations-all": {
+      "name": "Operations-All",
+      "emoji": "🚀",
+      "role": "DevOps Engineer",
+      "color": "#6c5ce7"
+    },
+    "specialists-all": {
+      "name": "Specialists-All",
+      "emoji": "🔬",
+      "role": "Research/BA",
+      "color": "#fd79a8"
+    }
+  },
+  "projects": {
+    "quickdelivery": {
+      "name": "QuickDelivery",
+      "description": "Food delivery platform",
+      "status": "active",
+      "created_at": "2026-04-19T13:45:00Z",
+      "environments": {
+        "dev": { "url": "http://localhost:3000", "status": "ready" },
+        "staging": { "url": "https://staging.quickdelivery.homes", "status": "not_deployed" },
+        "prod": { "url": "https://quickdelivery.homes", "status": "live" }
+      }
+    }
+  },
+  "tasks": [],
+  "columns": ["inbox", "todo", "in_progress", "review", "done"],
+  "next_task_id": 1
+}
