@@ -31,46 +31,71 @@ class TelegramNotifier:
     def __init__(self):
         self.api_base = "https://api.telegram.org/bot{token}"
     
-    def send_task_notification(self, agent_key, task, action='new'):
-        """Send task notification to agent"""
+    def notify_owner_task_seen(self, agent_key, task):
+        """Notify owner that agent has seen the task"""
         token = AGENT_BOTS.get(agent_key)
         if not token:
             print(f"❌ No bot token for agent: {agent_key}")
             return False
         
-        # Get agent info
-        agent_name = task.get('agent_name', agent_key.replace('-', ' ').title())
-        
-        # Build message
-        if action == 'new':
-            message = self._build_new_task_message(task, agent_name)
-        elif action == 'reminder':
-            message = self._build_reminder_message(task, agent_name)
-        else:
-            return False
-        
-        # Send message with inline keyboard
-        return self._send_message(token, task.get('agent_chat_id'), message, task['id'])
-    
-    def send_completion_notification(self, task, agent_key):
-        """Notify owner when task is completed"""
-        token = AGENT_BOTS.get('product-architect')  # Use Product-Architect bot
-        if not token:
-            return False
-        
-        agent_name = task.get('agent_name', agent_key.replace('-', ' ').title())
-        message = f"""✅ *Task Completed*
+        agent_info = self._get_agent_info(agent_key)
+        message = f"""👁️ *Task Seen*
 
-*Task:* {task['id']} - {task['title']}
-*Completed by:* {agent_name}
-*Project:* {task.get('project', 'N/A')}
+Agent: {agent_info['emoji']} {agent_info['name']}
+Task: {task['id']} - {task['title']}
+Project: {task.get('project', 'N/A')}
 
-Great work team! 🎉"""
+Agent has seen the assigned task."""
         
         return self._send_simple_message(token, OWNER_CHAT_ID, message)
     
-    def _build_new_task_message(self, task, agent_name):
-        """Build message for new task notification"""
+    def notify_owner_task_started(self, agent_key, task):
+        """Notify owner that agent has started working"""
+        token = AGENT_BOTS.get(agent_key)
+        if not token:
+            return False
+        
+        agent_info = self._get_agent_info(agent_key)
+        message = f"""🚀 *Task Started*
+
+Agent: {agent_info['emoji']} {agent_info['name']}
+Task: {task['id']} - {task['title']}
+Project: {task.get('project', 'N/A')}
+
+Agent has started working on this task."""
+        
+        return self._send_simple_message(token, OWNER_CHAT_ID, message)
+    
+    def notify_owner_task_completed(self, agent_key, task):
+        """Notify owner that agent has completed the task"""
+        token = AGENT_BOTS.get(agent_key)
+        if not token:
+            return False
+        
+        agent_info = self._get_agent_info(agent_key)
+        message = f"""✅ *Task Completed*
+
+Agent: {agent_info['emoji']} {agent_info['name']}
+Task: {task['id']} - {task['title']}
+Project: {task.get('project', 'N/A')}
+
+Agent has completed the task and is waiting for review."""
+        
+        return self._send_simple_message(token, OWNER_CHAT_ID, message)
+    
+    def send_task_to_agent(self, agent_key, task):
+        """Send task notification to agent (they will report to owner manually)"""
+        token = AGENT_BOTS.get(agent_key)
+        if not token:
+            print(f"❌ No bot token for agent: {agent_key}")
+            return False
+        
+        # Get agent chat ID - try to get from task or use a default
+        # For now, we'll need to discover this when agent first interacts
+        # or store it in a separate file
+        agent_chat_id = self._get_agent_chat_id(agent_key)
+        
+        agent_info = self._get_agent_info(agent_key)
         priority_emoji = {
             'critical': '🔴',
             'high': '🟠',
@@ -78,27 +103,67 @@ Great work team! 🎉"""
             'low': '🟢'
         }.get(task.get('priority', 'medium'), '🟡')
         
-        description = task.get('description', 'No description')[:100]  # Limit to 100 chars
-        if len(task.get('description', '')) > 100:
+        description = task.get('description', 'No description')[:150]
+        if len(task.get('description', '')) > 150:
             description += '...'
         
-        return f"""🎯 *New Task Assigned*
+        message = f"""🎯 *New Task Assigned*
 
 *{task['id']}*: {task['title']}
 
 {priority_emoji} *Priority:* {task.get('priority', 'medium').upper()}
 📋 *Description:* {description}
 
-Tap "Start Task" to begin working on this task."""
+⚠️ *Action Required:*
+Please report to @david3366:
+1. When you see this task (reply: "seen")
+2. When you start working (reply: "start")
+3. When you complete it (reply: "done")
+
+View full details in taskboard: http://localhost:5000"""
+        
+        return self._send_simple_message(token, agent_chat_id, message)
     
-    def _build_reminder_message(self, task, agent_name):
-        """Build reminder message"""
-        return f"""⏰ *Task Reminder*
-
-*{task['id']}*: {task['title']}
-
-This task is still waiting in your queue. 
-Please start working on it when ready."""
+    def _get_agent_info(self, agent_key):
+        """Get agent display info"""
+        agents = {
+            'product-architect': {'name': 'Product-Architect', 'emoji': '🎯'},
+            'backend-architect': {'name': 'Backend-Architect', 'emoji': '⚙️'},
+            'frontend-architect': {'name': 'Frontend-Architect', 'emoji': '🎨'},
+            'builder-modules': {'name': 'Builder-Modules', 'emoji': '🛠️'},
+            'builder-mobile': {'name': 'Builder-Mobile', 'emoji': '📱'},
+            'reviewer-all': {'name': 'Reviewer-All', 'emoji': '👁️'},
+            'operations-all': {'name': 'Operations-All', 'emoji': '🚀'},
+            'specialists-all': {'name': 'Specialists-All', 'emoji': '🔬'}
+        }
+        return agents.get(agent_key, {'name': agent_key, 'emoji': '👤'})
+    
+    def _get_agent_chat_id(self, agent_key):
+        """Get agent's Telegram chat ID from storage"""
+        # Try to load from file
+        try:
+            chat_ids_file = os.path.join(os.path.dirname(__file__), '.agent_chat_ids.json')
+            if os.path.exists(chat_ids_file):
+                with open(chat_ids_file, 'r') as f:
+                    chat_ids = json.load(f)
+                    return chat_ids.get(agent_key, OWNER_CHAT_ID)  # Fallback to owner
+        except:
+            pass
+        return OWNER_CHAT_ID  # Default to owner if not found
+    
+    def save_agent_chat_id(self, agent_key, chat_id):
+        """Save agent's chat ID when they first interact"""
+        try:
+            chat_ids_file = os.path.join(os.path.dirname(__file__), '.agent_chat_ids.json')
+            chat_ids = {}
+            if os.path.exists(chat_ids_file):
+                with open(chat_ids_file, 'r') as f:
+                    chat_ids = json.load(f)
+            chat_ids[agent_key] = chat_id
+            with open(chat_ids_file, 'w') as f:
+                json.dump(chat_ids, f)
+        except Exception as e:
+            print(f"❌ Error saving chat ID: {e}")
     
     def _send_message(self, token, chat_id, message, task_id):
         """Send message with inline keyboard"""
